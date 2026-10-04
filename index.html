@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Color Hoop</title>
+<style>
+body{margin:0;background:#101014;color:white;font-family:Arial;text-align:center}
+h2{margin:15px}
+#info{font-size:18px}
+#game{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:25px}
+.tube{width:65px;height:260px;border:3px solid #aaa;border-radius:35px;display:flex;flex-direction:column-reverse;align-items:center;padding:8px;background:#222;cursor:pointer;transition:.2s}
+.tube:hover{transform:scale(1.05)}
+.sel{border-color:#00ffff;box-shadow:0 0 15px #00ffff}
+.ball{width:50px;height:50px;border-radius:50%;margin:3px;box-shadow:inset -5px -5px 8px #0005}
+button{padding:12px 25px;border:0;border-radius:20px;font-size:18px;margin:10px}
+</style>
+</head>
+<body>
+
+<h2>Color Hoop</h2>
+<div id="info">Level: 1</div>
+<div id="game"></div>
+<button onclick="newGame()">New Level</button>
+
+<script>
+let level=1,pick=-1,tubes=[];
+
+function randomLevel(){
+ let n=Math.min(4+level,10);
+ let arr=[];
+ let cols=[];
+ for(let i=0;i<n;i++){
+  let c="hsl("+Math.floor(Math.random()*360)+",80%,55%)";
+  cols.push(c);
+ }
+ cols.forEach(c=>{
+  for(let i=0;i<4;i++)arr.push(c);
+ });
+ arr.sort(()=>Math.random()-.5);
+
+ tubes=[];
+ for(let i=0;i<n;i++)tubes.push([]);
+ for(let i=0;i<n;i++)
+  for(let j=0;j<4;j++)
+   tubes[i].push(arr.pop());
+ tubes.push([]);
+ tubes.push([]);
+}
+
+function draw(){
+ let g=document.getElementById("game");
+ g.innerHTML="";
+ tubes.forEach((t,i)=>{
+  let d=document.createElement("div");
+  d.className="tube"+(pick==i?" sel":"");
+  d.onclick=()=>move(i);
+  t.forEach(c=>{
+   let b=document.createElement("div");
+   b.className="ball";
+   b.style.background=c;
+   d.appendChild(b);
+  });
+  g.appendChild(d);
+ });
+ check();
+}
+
+function move(i){
+ if(pick<0){
+  if(tubes[i].length)pick=i;
+ }else{
+  if(pick!=i){
+   let a=tubes[pick],b=tubes[i];
+   let color=a[a.length-1];
+   if(b.length<4&&(b.length==0||b[b.length-1]==color)){
+    b.push(a.pop());
+   }
+  }
+  pick=-1;
+ }
+ draw();
+}
+
+function check(){
+ let win=true;
+ tubes.forEach(t=>{
+  if(t.length&&(!t.every(x=>x==t[0])||t.length!=4))
+   win=false;
+ });
+ if(win){
+  setTimeout(()=>{
+   alert("Level Complete!");
+   level++;
+   document.getElementById("info").innerHTML="Level: "+level;
+   newGame();
+  },300);
+ }
+}
+
+function newGame(){
+ pick=-1;
+ randomLevel();
+ draw();
+}
+
+newGame();
+</script>
+</body>
+</html>
